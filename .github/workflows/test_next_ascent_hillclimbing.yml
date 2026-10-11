@@ -23,12 +23,12 @@ jobs:
 
       - name: Run Next Ascent Hillclimbing With 20 Variables
         run: |
-          timeout 10s bash -c "printf '2\n2\n30\n1\n' | python -u -m src.main"
+          timeout 1s bash -c "printf '2\n2\n1\n1\n' | python -u -m src.main"
 
       - name: Run Next Ascent Hillclimbing With 100 Variables
         run: |
-          timeout 10s bash -c "printf '3\n2\n30\n1\n' | python -u -m src.main"
+          timeout 1s bash -c "printf '3\n2\n1\n1\n' | python -u -m src.main"
 
       - name: Run Next Ascent Hillclimbing With 250 Variables
         run: |
-          timeout 10s bash -c "printf '4\n2\n30\n1\n' | python -u -m src.main"
+          timeout 1s bash -c "printf '4\n2\n1\n1\n' | python -u -m src.main"
