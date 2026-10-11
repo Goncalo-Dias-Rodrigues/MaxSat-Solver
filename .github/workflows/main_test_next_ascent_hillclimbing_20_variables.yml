@@ -23,4 +23,4 @@ jobs:
 
       - name: Run main.py with automatic inputs
         run: |
-          printf '2\n2\n30\n1\n' | python -u src/main.py
+          printf '2\n2\n30\n1\n' | python -u -m src/main.py
