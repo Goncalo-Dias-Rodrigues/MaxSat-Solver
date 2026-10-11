@@ -1,6 +1,6 @@
-from file_manager import FileManager
-from maxsat import MaxSat
-from result_manager import ResultManager
+from src.file_manager import FileManager
+from src.maxsat import MaxSat
+from src.result_manager import ResultManager
 import time
 
 from src.strategies.brute_force_strategy import BruteForceStrategy
@@ -14,10 +14,10 @@ if __name__ == '__main__':
     # TO-DO: Add evaluation function counter
 
     files = {
-        1: "files/hoos.cnf",
-        2: "files/20variables/uf20-01.cnf",
-        3: "files/100variables/uf100-01.cnf",
-        4: "files/250variables/uf250-01.cnf"
+        1: "src/files/hoos.cnf",
+        2: "src/files/20variables/uf20-01.cnf",
+        3: "src/files/100variables/uf100-01.cnf",
+        4: "src/files/250variables/uf250-01.cnf"
     }
 
     print("\n========== MAX-SAT SOLVER ==========")
