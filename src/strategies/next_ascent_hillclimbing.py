@@ -1,6 +1,6 @@
 import random
 
-from maxsat_strategy import MaxSatStrategy
+from src.strategies.maxsat_strategy import MaxSatStrategy
 
 
 class NextAscentHillClimbingStrategy(MaxSatStrategy):

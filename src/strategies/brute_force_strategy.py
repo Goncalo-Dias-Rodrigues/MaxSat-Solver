@@ -1,4 +1,4 @@
-from maxsat_strategy import MaxSatStrategy
+from src.strategies.maxsat_strategy import MaxSatStrategy
 
 class BruteForceStrategy(MaxSatStrategy):
 
