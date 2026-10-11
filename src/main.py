@@ -3,8 +3,8 @@ from maxsat import MaxSat
 from result_manager import ResultManager
 import time
 
-from brute_force_strategy import BruteForceStrategy
-from src.next_ascent_hillclimbing import NextAscentHillClimbingStrategy
+from src.strategies.brute_force_strategy import BruteForceStrategy
+from src.strategies.next_ascent_hillclimbing import NextAscentHillClimbingStrategy
 
 
 if __name__ == '__main__':
@@ -14,8 +14,8 @@ if __name__ == '__main__':
     # TO-DO: Add evaluation function counter
 
     files = {
-        1: "files/20variables/uf20-01.cnf",
-        2: "files/hoos.cnf",
+        1: "files/hoos.cnf",
+        2: "files/20variables/uf20-01.cnf",
         3: "files/100variables/uf100-01.cnf",
         4: "files/250variables/uf250-01.cnf"
     }
