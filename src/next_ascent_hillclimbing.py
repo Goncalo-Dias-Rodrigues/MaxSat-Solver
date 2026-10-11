@@ -32,14 +32,9 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
 
             current_result = max_sat.calculate_clauses(best_result)
             visited_neighbours.append(tuple(self.variables))
-            if current_result == max_sat.information[3]:
-                if not best_result == max_sat.information[3]:
-                    best_hypotheses.clear()
-                best_result = current_result
-                best_hypotheses.append(max_sat.current_hypothesis_to_string())
-            elif current_result >= best_result:
-                if not current_result == best_result:
-                    best_hypotheses.clear()
+
+            if current_result > best_result:
+                best_hypotheses.clear()
                 best_result = current_result
                 best_hypotheses.append(max_sat.current_hypothesis_to_string())
                 visited_neighbours.clear()

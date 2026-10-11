@@ -9,10 +9,10 @@ if __name__ == '__main__':
 
     file_manager = FileManager()
 
-    information, clauses = file_manager.get_info("files/20variables/uf20-01.cnf")
+    #information, clauses = file_manager.get_info("files/20variables/uf20-01.cnf")
     #information, clauses = file_manager.get_info("files/hoos.cnf")
     #information, clauses = file_manager.get_info("files/100variables/uf100-01.cnf")
-    #information, clauses = file_manager.get_info("files/250variables/uf250-01.cnf")
+    information, clauses = file_manager.get_info("files/250variables/uf250-01.cnf")
 
 
     # start = time.perf_counter()
