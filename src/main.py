@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     file_manager = FileManager()
 
+    # TO-DO: Add evaluation function counter
 
     files = {
         1: "files/20variables/uf20-01.cnf",
