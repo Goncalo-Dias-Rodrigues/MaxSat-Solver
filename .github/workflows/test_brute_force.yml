@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  run-next-ascent-hillclimbing:
+  run-brute-force:
     runs-on: ubuntu-latest
 
     steps:
