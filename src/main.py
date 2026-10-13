@@ -4,6 +4,7 @@ from src.result_manager import ResultManager
 import time
 
 from src.strategies.brute_force_strategy import BruteForceStrategy
+from src.strategies.multistart_next_ascent_hillclimbing import MultiStartNextAscentHillClimbingStrategy
 from src.strategies.next_ascent_hillclimbing import NextAscentHillClimbingStrategy
 
 
@@ -43,15 +44,16 @@ if __name__ == '__main__':
     print("\nSelect an algorithm:")
     print("1. Brute Force")
     print("2. Next Ascent Hill Climbing")
+    print("3. Multi-Start Next Ascent Hill Climbing")
 
     while True:
         try:
             algorithm_option = int(input("\nEnter the algorithm number: "))
 
-            if algorithm_option in (1, 2):
+            if algorithm_option in (1, 2, 3):
                 break
 
-            print("Invalid option. Please select 1 or 2.")
+            print("Invalid option. Please select 1, 2 or 3.")
 
         except ValueError:
             print("Invalid input. Please enter a number.")
@@ -74,6 +76,8 @@ if __name__ == '__main__':
         "Brute Force"
         if algorithm_option == 1
         else "Next Ascent Hill Climbing"
+        if algorithm_option == 2
+        else "Multi-Start Next Ascent Hill Climbing"
     )
 
     print("\n========== EXECUTION CONFIGURATION ==========")
@@ -99,8 +103,10 @@ if __name__ == '__main__':
 
             if algorithm_option == 1:
                 strategy = BruteForceStrategy(max_sat)
-            else:
+            elif algorithm_option == 2:
                 strategy = NextAscentHillClimbingStrategy(max_sat)
+            else:
+                strategy = MultiStartNextAscentHillClimbingStrategy(max_sat)
 
             best_result, best_hypotheses, number_of_evaluations = strategy.solve(max_sat)
 
