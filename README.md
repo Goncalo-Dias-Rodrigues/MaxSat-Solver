@@ -1,23 +1,21 @@
 # MaxSat-Solver
 
-A small Python project focused on solving MaxSAT instances using different search strategies. The repository is built as a learning-oriented implementation: it reads DIMACS CNF files, evaluates candidate assignments against the formula, and compares the performance of exact and heuristic approaches.
+A small Python project for solving MaxSAT instances using different search strategies. The project reads DIMACS CNF files, evaluates candidate assignments, and compares exact and heuristic approaches on the same problem instances.
 
-The goal is not to build the fastest industrial solver, but to understand how MaxSAT is modeled, how local search behaves, and how optimization strategies can be structured in a clean and reusable way.
+The objective is educational: the solver is intentionally simple and modular, making it easy to understand how MaxSAT is modeled, how local search works, and how optimization algorithms can be structured around a shared core.
 
 ## Overview
 
-Maximum Satisfiability (MaxSAT) is a generalization of SAT where the objective is not to satisfy every clause, but to satisfy as many clauses as possible. In practice, this means finding an assignment of Boolean variables that maximizes the number of satisfied clauses in a formula.
+Maximum Satisfiability (MaxSAT) generalizes SAT by maximizing the number of satisfied clauses rather than requiring all of them to be satisfied. In practice, each CNF instance is treated as a set of Boolean variables and clauses, and the solver looks for an assignment that satisfies as many clauses as possible.
 
-This project treats each CNF file as a MaxSAT instance and evaluates assignments using the same logic used in classic SAT solving: every clause is an OR of literals and a clause is satisfied when at least one literal evaluates to True.
+The current codebase includes:
 
-The solver currently supports:
-
-- exhaustive search via brute force
-- local optimization via next-ascent hill climbing
-- execution logging with CSV-based result tracking
-- a command-line interface to select instances and algorithms
-
-The repository is intentionally modular so new algorithms can be added without rewriting the solver core.
+- brute-force exact search
+- next-ascent hill climbing
+- multi-start next-ascent hill climbing
+- DIMACS CNF file parsing
+- execution logging to CSV
+- a simple CLI to configure and run experiments
 
 ## Project structure
 
@@ -25,6 +23,7 @@ The repository is intentionally modular so new algorithms can be added without r
 MaxSat-Solver/
 ├── .github/
 │   └── workflows/
+│       ├── ci.yml
 │       ├── test_brute_force.yml
 │       └── test_next_ascent_hillclimbing.yml
 ├── src/
@@ -32,7 +31,10 @@ MaxSat-Solver/
 │   │   ├── hoos.cnf
 │   │   ├── 20variables/
 │   │   ├── 100variables/
-│   │   └── 250variables/
+│   │   ├── 250variables/
+│   │   └── ...
+│   ├── reports/
+│   │   └── Lab1 Metaheuristics Report.pdf
 │   ├── strategies/
 │   │   ├── brute_force_strategy.py
 │   │   ├── maxsat_strategy.py
@@ -45,116 +47,77 @@ MaxSat-Solver/
 │   └── __pycache__/
 ├── README.md
 ├── results.csv
-└── .gitignore
+├── .gitignore
+└── .gitattributes
 ```
 
-### Source files
+### Main source files
 
-- `src/main.py`: entry point for the CLI. It lets the user pick a CNF instance, choose an algorithm, and run it multiple times.
-- `src/file_manager.py`: parses DIMACS CNF files and extracts the problem information and clauses.
-- `src/maxsat.py`: core evaluation engine. It contains the logic to evaluate a hypothesis, count satisfied clauses, and convert the current assignment into a binary string.
-- `src/result_manager.py`: stores execution data in a CSV file with timestamp, algorithm name, instance size, runtime, and best result.
+- `src/main.py`: entry point for the interactive CLI. It lets the user select a CNF file, an algorithm, and the number of executions.
+- `src/file_manager.py`: parses DIMACS CNF files and extracts the problem metadata and the clause list.
+- `src/maxsat.py`: core evaluator. It stores the current assignment, checks whether a clause is satisfied, counts satisfied clauses, and supports early pruning.
+- `src/result_manager.py`: saves execution metrics to `results.csv` with timestamp and results for each run.
 
-### Strategies
+### Strategy layer
 
-- `src/strategies/maxsat_strategy.py`: abstract base class that defines the common `solve(max_sat)` interface.
-- `src/strategies/brute_force_strategy.py`: exact strategy that enumerates all possible assignments.
-- `src/strategies/next_ascent_hillclimbing.py`: local search method that iteratively flips a variable and keeps improving moves.
-- `src/strategies/multistart_next_ascent_hillclimbing.py`: placeholder for a multi-start extension of the same idea.
+- `src/strategies/maxsat_strategy.py`: abstract base interface for all algorithms.
+- `src/strategies/brute_force_strategy.py`: exact search over every assignment of the Boolean variables.
+- `src/strategies/next_ascent_hillclimbing.py`: local search that improves the current hypothesis by flipping one variable at a time.
+- `src/strategies/multistart_next_ascent_hillclimbing.py`: repeated random-start hill climbing to improve robustness.
 
-## Patterns used
+## DIMACS CNF support
 
-The code follows a small set of clear patterns that make the solver easy to extend.
+The solver expects files in the standard DIMACS CNF format used in SAT/MaxSAT benchmarks:
 
-### 1. Strategy pattern
-
-Each algorithm implements the same interface defined in `MaxSatStrategy`. This keeps the solver core independent from the search method. The evaluation logic is separated from the optimization logic, which means that a new algorithm can be added by writing a new class that implements `solve()`.
-
-This is a useful pattern for comparing different optimization techniques without rewriting the problem definition or file parser.
-
-### 2. DIMACS CNF parsing
-
-The repository follows the DIMACS format used in SAT and MaxSAT benchmarks:
-
-- header line starting with `p` gives the problem metadata
-- comments starting with `c` are ignored
-- clauses are listed as integer literals, where positive values indicate positive variables and negative values indicate negated variables
+- `p` lines describe the instance metadata (`num_vars num_clauses`)
+- comments beginning with `c` are ignored
+- clauses are written as integer literals, where positive numbers mean positive literals and negative numbers mean negated literals
 - each clause ends with `0`
 
-The parser in `FileManager` turns this structure into a Python representation that the evaluator can work with.
+The parser in `FileManager` extracts the metadata and produces a list of clauses ready for evaluation.
 
-### 3. Core evaluator
+## Core evaluation model
 
-The `MaxSat` class is responsible for evaluating candidate assignments.
+The `MaxSat` class is the center of the solver. It contains:
 
-- each variable is represented as a Boolean value
-- a clause is satisfied when at least one literal evaluates to True
-- the solver counts how many clauses are satisfied for a given assignment
-- it also uses pruning logic to stop early when a hypothesis cannot beat the current best result
+- the current assignment for each variable
+- clause evaluation logic
+- a count of satisfied clauses
+- early stopping when a candidate hypothesis cannot beat the best result so far
+- conversion from the current variable assignment to a binary string representation
 
-This is the central object around which all strategies are built.
+Each clause is considered satisfied when at least one literal evaluates to `True`.
 
-### 4. Result tracking
+## Available algorithms
 
-The `ResultManager` writes structured execution data to `results.csv`. This allows comparisons between algorithms on the same instances and keeps a log of performance metrics such as:
+### 1. Brute Force
 
-- execution time
-- number of variables
-- number of clauses
-- best objective value
-- number of solutions found
-- best hypothesis string
+`BruteForceStrategy` enumerates every assignment of the variables in binary-count order. It checks each one against the formula and keeps the best value found. This is exact and useful as a baseline, but it grows exponentially with the number of variables.
 
-### 5. Simple CLI orchestration
+### 2. Next Ascent Hill Climbing
 
-The program in `src/main.py` is intentionally minimal and direct. It:
+`NextAscentHillClimbingStrategy` starts from a random assignment and iteratively flips one variable at a time. It accepts a move only if it improves the current score and avoids revisiting already explored neighbors. This makes it a simple greedy local-search strategy.
 
-- shows available CNF files
-- lets the user pick one
-- asks for the algorithm
-- asks for the number of executions
-- runs the strategy
-- saves the results
+### 3. Multi-Start Next Ascent Hill Climbing
 
-This keeps the project easy to run and debug while staying close to the core logic.
+`MultiStartNextAscentHillClimbingStrategy` repeats the previous process from multiple random starts. The idea is to reduce the risk of being trapped in a poor local optimum by exploring several basins of attraction.
 
-## Algorithms implemented
+## Example CNF files
 
-### Brute Force
-
-The brute force solver in `BruteForceStrategy` exhaustively enumerates every possible assignment for the variables in the instance.
-
-It works by iterating over the assignment space like a binary counter. For each assignment, the solver evaluates the formula and compares the result to the best value found so far. Because the search space grows exponentially with the number of variables, this approach is only feasible for small or medium instances.
-
-This algorithm is useful as a baseline because it guarantees the optimal value for a given formula.
-
-### Next Ascent Hill Climbing
-
-The next-ascent hill climbing implementation is a local search method designed to escape the rigidity of exhaustive search while keeping the code simple.
-
-The strategy:
-
-- starts from a random assignment
-- flips one variable at a time
-- evaluates the clause count after each flip
-- keeps a move when it improves the current score
-- avoids revisiting already tested neighbours
-- stops when no better neighbour is available or a search limit is reached
-
-This is a classic hill-climbing pattern: Greedy improvement with a local neighbourhood defined by single-variable flips. In this implementation, the neighbourhood is based on 1-bit Hamming distance changes, which means each neighbour differs from the current assignment by exactly one variable.
-
-The algorithm is lightweight and easy to understand, but it is not guaranteed to reach the global optimum because it may get trapped in local maxima.
-
-## Supported problem files
-
-The repository includes a few DIMACS CNF examples in `src/files`:
+The repository ships with sample DIMACS instances under `src/files`:
 
 - `hoos.cnf`
 - `20variables/uf20-01.cnf`
+- `20variables/uf20-02.cnf`
+- `20variables/uf20-03.cnf`
 - `100variables/uf100-01.cnf`
+- `100variables/uf100-02.cnf`
+- `100variables/uf100-03.cnf`
 - `250variables/uf250-01.cnf`
+- `250variables/uf250-02.cnf`
+- `250variables/uf250-03.cnf`
 
-These files are useful for testing solver behavior across different instance sizes and difficulty levels.
+These are useful for testing solver behavior across different instance sizes and difficulty levels.
 
 ## How to run
 
@@ -164,29 +127,43 @@ From the repository root, run:
 python -m src.main
 ```
 
-The application will prompt for:
+The CLI will ask for:
 
 1. the CNF file to use
-2. the algorithm to execute
-3. the number of runs
+2. the algorithm to run
+3. the number of executions
+4. confirmation to start the run
 
-After execution, results are stored in `results.csv`.
+After each execution, the program prints the elapsed time, evaluation count, best result, and best hypothesis. The results are also persisted to `results.csv`.
+
+## Result tracking
+
+`ResultManager` writes one row per execution with the following data:
+
+- timestamp
+- CNF filename
+- algorithm name
+- execution number
+- number of variables
+- number of clauses
+- number of evaluations
+- execution time in seconds
+- best result
+- number of solutions found
+- best hypothesis
+
+This makes it easy to compare runs and visualize performance differences between strategies.
 
 ## Why this project matters
 
-This repository is a practical introduction to MaxSAT solving and metaheuristic design. It demonstrates the difference between:
+This project is a practical introduction to MaxSAT solving and heuristic optimization. It demonstrates the contrast between:
 
 - exact search, which guarantees optimality but scales poorly
-- local search, which is faster and more flexible but can be trapped in local optima
+- local search, which is faster and more flexible but may remain trapped in local optima
 
-It also shows how to organize a solver around reusable abstractions and how to compare algorithms using observable metrics instead of intuition alone.
+It also shows how to organize a solver around reusable abstractions and how to compare algorithms with measurable metrics instead of intuition alone.
 
-## Future direction
+## Notes
 
-More algorithms will come as I advance in the metaheuristics class in university.
-The project is intentionally structured to support that growth without breaking the existing solver core.
-
-## Final note
-
-This repository is a learning project, but it is already a solid base for experimenting with MaxSAT and metaheuristic optimization. The current implementations are simple, readable, and modular, which makes them ideal foundations for future comparisons and more advanced search strategies.
+This repository is intentionally compact and educational. The design is easy to extend, so new strategies, pruning heuristics, or other SAT/MaxSAT techniques can be added without rewriting the core logic.
 
