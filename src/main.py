@@ -18,7 +18,13 @@ if __name__ == '__main__':
         1: "src/files/hoos.cnf",
         2: "src/files/20variables/uf20-01.cnf",
         3: "src/files/100variables/uf100-01.cnf",
-        4: "src/files/250variables/uf250-01.cnf"
+        4: "src/files/250variables/uf250-01.cnf",
+        5: "src/files/20variables/uf20-02.cnf",
+        6: "src/files/100variables/uf100-02.cnf",
+        7: "src/files/250variables/uf250-02.cnf",
+        8: "src/files/20variables/uf20-03.cnf",
+        9: "src/files/100variables/uf100-03.cnf",
+        10: "src/files/250variables/uf250-03.cnf",
     }
 
     print("\n========== MAX-SAT SOLVER ==========")
