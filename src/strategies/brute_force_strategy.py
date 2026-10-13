@@ -1,4 +1,4 @@
-from maxsat_strategy import MaxSatStrategy
+from src.strategies.maxsat_strategy import MaxSatStrategy
 
 class BruteForceStrategy(MaxSatStrategy):
 
@@ -14,9 +14,11 @@ class BruteForceStrategy(MaxSatStrategy):
         :return: Best result and the hypotheses that achieve that result
         """
         best_result = -1
+        number_of_evaluations = 0
         best_hypotheses = []
         for _ in range(1 << max_sat.information[2]):
             current_result = max_sat.calculate_clauses(best_result)
+            number_of_evaluations += 1
             if current_result == max_sat.information[3]:
                 if not best_result == max_sat.information[3]:
                     best_hypotheses.clear()
@@ -28,7 +30,7 @@ class BruteForceStrategy(MaxSatStrategy):
                 best_result = current_result
                 best_hypotheses.append(max_sat.current_hypothesis_to_string())
             self.next_hypothesis()
-        return best_result, best_hypotheses
+        return best_result, best_hypotheses, number_of_evaluations
 
     def next_hypothesis(self):
         """

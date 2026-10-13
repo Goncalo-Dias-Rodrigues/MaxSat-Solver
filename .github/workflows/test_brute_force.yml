@@ -1,0 +1,26 @@
+name: Run Test Brute-Force
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  run-brute-force:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repository code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run Brute-Force With 20 Variables
+        run: |
+          timeout 5s bash -c "printf '2\n1\n1\n1\n' | python -u -m src.main"

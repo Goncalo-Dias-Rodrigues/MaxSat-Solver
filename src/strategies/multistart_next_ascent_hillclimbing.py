@@ -1,0 +1,66 @@
+import random
+
+from src.strategies.maxsat_strategy import MaxSatStrategy
+
+
+class MultiStartNextAscentHillClimbingStrategy(MaxSatStrategy):
+    """
+    Multi-Start Next Ascent Hillclimbing using a 1-bit Hamming Distance neighbourhood
+    """
+
+    def __init__(self, maxsat):
+        self.maxsat = maxsat
+        self.variables = maxsat.variables
+        self.index_to_change = 0
+
+    def solve(self, max_sat):
+        """
+        Solves the MaxSAT problem using Multi-Start Next Ascent Hillclimbing
+        """
+        best_result = -1
+        number_of_evaluations = 0
+        best_hypotheses = []
+        visited_neighbours = []
+        has_better_neighbour = True
+
+        while number_of_evaluations < 10000000 and not best_result >= max_sat.information[3]:
+            self.get_random_start()
+            visited_neighbours.clear()
+            while has_better_neighbour:
+                if len(visited_neighbours) >= max_sat.information[2]:
+                    break
+
+                while tuple(self.variables) in visited_neighbours:
+                    self.go_back()
+                    self.get_neighbour()
+
+                current_result = max_sat.calculate_clauses(best_result)
+                number_of_evaluations += 1
+                visited_neighbours.append(tuple(self.variables))
+
+                if current_result > best_result:
+                    best_hypotheses.clear()
+                    best_result = current_result
+                    best_hypotheses.append(max_sat.current_hypothesis_to_string())
+                    visited_neighbours.clear()
+                else:
+                    self.go_back()
+                self.get_neighbour()
+
+        return best_result, best_hypotheses, number_of_evaluations
+
+    def get_neighbour(self):
+        #print(self.variables)
+        self.index_to_change = random.randint(0, len(self.variables) - 1)
+        self.variables[self.index_to_change] = not self.variables[self.index_to_change]
+
+    def go_back(self):
+        self.variables[self.index_to_change] = not self.variables[self.index_to_change]
+
+    def get_random_start(self):
+        for index in range(len(self.variables)):
+            random_boolean = random.randint(0, 9)
+            if random_boolean < 5:
+                self.variables[index] = True
+            elif random_boolean >= 5:
+                self.variables[index] = False

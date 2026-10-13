@@ -1,0 +1,34 @@
+name: Run Test Next Ascent Hillclimbing
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  run-next-ascent-hillclimbing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repository code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run Next Ascent Hillclimbing With 20 Variables
+        run: |
+          timeout 1s bash -c "printf '2\n2\n1\n1\n' | python -u -m src.main"
+
+      - name: Run Next Ascent Hillclimbing With 100 Variables
+        run: |
+          timeout 1s bash -c "printf '3\n2\n1\n1\n' | python -u -m src.main"
+
+      - name: Run Next Ascent Hillclimbing With 250 Variables
+        run: |
+          timeout 1s bash -c "printf '4\n2\n1\n1\n' | python -u -m src.main"

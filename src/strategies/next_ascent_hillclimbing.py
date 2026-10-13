@@ -1,6 +1,6 @@
 import random
 
-from maxsat_strategy import MaxSatStrategy
+from src.strategies.maxsat_strategy import MaxSatStrategy
 
 
 class NextAscentHillClimbingStrategy(MaxSatStrategy):
@@ -18,6 +18,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
         """
         """
         best_result = -1
+        number_of_evaluations = 0
         best_hypotheses = []
         visited_neighbours = []
         has_better_neighbour = True
@@ -31,22 +32,18 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
                 self.get_neighbour()
 
             current_result = max_sat.calculate_clauses(best_result)
+            number_of_evaluations += 1
             visited_neighbours.append(tuple(self.variables))
-            if current_result == max_sat.information[3]:
-                if not best_result == max_sat.information[3]:
-                    best_hypotheses.clear()
-                best_result = current_result
-                best_hypotheses.append(max_sat.current_hypothesis_to_string())
-            elif current_result >= best_result:
-                if not current_result == best_result:
-                    best_hypotheses.clear()
+
+            if current_result > best_result:
+                best_hypotheses.clear()
                 best_result = current_result
                 best_hypotheses.append(max_sat.current_hypothesis_to_string())
                 visited_neighbours.clear()
             else:
                 self.go_back()
             self.get_neighbour()
-        return best_result, best_hypotheses
+        return best_result, best_hypotheses, number_of_evaluations
 
     def get_neighbour(self):
         #print(self.variables)
@@ -57,7 +54,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
         self.variables[self.index_to_change] = not self.variables[self.index_to_change]
 
     def get_random_start(self):
-        for index in range(len(self.variables) - 1):
+        for index in range(len(self.variables)):
             random_boolean = random.randint(0, 9)
             if random_boolean < 5:
                 self.variables[index] = True

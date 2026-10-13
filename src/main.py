@@ -1,55 +1,148 @@
-from file_manager import FileManager
-from maxsat import MaxSat
+from src.file_manager import FileManager
+from src.maxsat import MaxSat
+from src.result_manager import ResultManager
 import time
 
-from brute_force_strategy import BruteForceStrategy
-from src.next_ascent_hillclimbing import NextAscentHillClimbingStrategy
+from src.strategies.brute_force_strategy import BruteForceStrategy
+from src.strategies.multistart_next_ascent_hillclimbing import MultiStartNextAscentHillClimbingStrategy
+from src.strategies.next_ascent_hillclimbing import NextAscentHillClimbingStrategy
+
 
 if __name__ == '__main__':
 
     file_manager = FileManager()
 
-    information, clauses = file_manager.get_info("files/20variables/uf20-01.cnf")
-    #information, clauses = file_manager.get_info("files/hoos.cnf")
-    #information, clauses = file_manager.get_info("files/100variables/uf100-01.cnf")
-    #information, clauses = file_manager.get_info("files/250variables/uf250-01.cnf")
+    # TO-DO: Add evaluation function counter
 
+    files = {
+        1: "src/files/hoos.cnf",
+        2: "src/files/20variables/uf20-01.cnf",
+        3: "src/files/100variables/uf100-01.cnf",
+        4: "src/files/250variables/uf250-01.cnf",
+        5: "src/files/20variables/uf20-02.cnf",
+        6: "src/files/100variables/uf100-02.cnf",
+        7: "src/files/250variables/uf250-02.cnf",
+        8: "src/files/20variables/uf20-03.cnf",
+        9: "src/files/100variables/uf100-03.cnf",
+        10: "src/files/250variables/uf250-03.cnf",
+    }
 
-    # start = time.perf_counter()
-    # max_sat = MaxSat(information, clauses)
-    # strategy = BruteForceStrategy(max_sat)
-    #
-    # best_result, best_hypotheses = strategy.solve(max_sat)
-    #
-    # end = time.perf_counter()
-    #
-    # time1 = end - start
-    # print(f"Algorithm execution time: {time1:.6f} segundos")
-    # print(f"Number of variables: {information[2]}")
-    # print(f"Number of Clauses: {information[3]}")
-    # print(f"Best Result: {best_result}")
-    # print(f"Number of solutions: {len(best_hypotheses)}")
-    # print(f"Best Hypothesis: {best_hypotheses}")
+    print("\n========== MAX-SAT SOLVER ==========")
+    print("\nSelect a CNF file:")
 
+    for option, filename in files.items():
+        print(f"{option}. {filename}")
 
-    for _ in range(0, 30):
-        start = time.perf_counter()
-        max_sat = MaxSat(information, clauses)
-        strategy = NextAscentHillClimbingStrategy(max_sat)
+    while True:
+        try:
+            file_option = int(input("\nEnter the file number: "))
 
-        best_result, best_hypotheses = strategy.solve(max_sat)
+            if file_option in files:
+                break
 
-        end = time.perf_counter()
+            print("Invalid option. Please select a number from 1 to 4.")
 
-        time2 = end - start
-        print(f"Algorithm execution time: {time2:.6f} segundos")
-        print(f"Number of variables: {information[2]}")
-        print(f"Number of Clauses: {information[3]}")
-        print(f"Best Result: {best_result}")
-        print(f"Number of solutions: {len(best_hypotheses)}")
-        print(f"Best Hypothesis: {best_hypotheses}")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
 
+    information, clauses = file_manager.get_info(files[file_option])
 
-    # print(information)
-    # print(clauses)
+    print("\nSelect an algorithm:")
+    print("1. Brute Force")
+    print("2. Next Ascent Hill Climbing")
+    print("3. Multi-Start Next Ascent Hill Climbing")
 
+    while True:
+        try:
+            algorithm_option = int(input("\nEnter the algorithm number: "))
+
+            if algorithm_option in (1, 2, 3):
+                break
+
+            print("Invalid option. Please select 1, 2 or 3.")
+
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+    while True:
+        try:
+            executions = int(input("\nHow many times do you want to run the algorithm? "))
+
+            if executions > 0:
+                break
+
+            print("The number of executions must be greater than zero.")
+
+        except ValueError:
+            print("Invalid input. Please enter a positive integer.")
+
+    result_manager = ResultManager()
+
+    algorithm_name = (
+        "Brute Force"
+        if algorithm_option == 1
+        else "Next Ascent Hill Climbing"
+        if algorithm_option == 2
+        else "Multi-Start Next Ascent Hill Climbing"
+    )
+
+    print("\n========== EXECUTION CONFIGURATION ==========")
+    print(f"CNF file: {files[file_option]}")
+    print(f"Number of variables: {information[2]}")
+    print(f"Number of clauses: {information[3]}")
+    print(f"Algorithm: {algorithm_name}")
+    print(f"Number of executions: {executions}")
+
+    confirm = input("\nStart execution? (1 = Yes, 2 = No): ")
+
+    if confirm == "1":
+
+        for execution in range(1, executions + 1):
+
+            print(f"\n========== EXECUTION {execution}/{executions} ==========")
+
+            start = time.perf_counter()
+
+            max_sat = MaxSat(information, clauses)
+
+            number_of_evaluations = 0
+
+            if algorithm_option == 1:
+                strategy = BruteForceStrategy(max_sat)
+            elif algorithm_option == 2:
+                strategy = NextAscentHillClimbingStrategy(max_sat)
+            else:
+                strategy = MultiStartNextAscentHillClimbingStrategy(max_sat)
+
+            best_result, best_hypotheses, number_of_evaluations = strategy.solve(max_sat)
+
+            end = time.perf_counter()
+
+            time_taken = end - start
+
+            result_manager.save_result(
+                cnf_file=files[file_option],
+                algorithm=algorithm_name,
+                execution=execution,
+                num_variables=information[2],
+                num_clauses=information[3],
+                number_evaluations=number_of_evaluations,
+                execution_time=time_taken,
+                best_result=best_result,
+                num_solutions=len(best_hypotheses),
+                best_hypothesis=best_hypotheses
+            )
+
+            print(f"Algorithm execution time: {time_taken:.6f} seconds")
+            print(f"Number of variables: {information[2]}")
+            print(f"Number of clauses: {information[3]}")
+            print(f"Number of evaluations: {number_of_evaluations}")
+            print(f"Best result: {best_result}")
+            print(f"Number of solutions: {len(best_hypotheses)}")
+            print(f"Best hypothesis: {best_hypotheses}")
+
+    elif confirm == "2":
+        print("\nExecution cancelled.")
+
+    else:
+        print("\nInvalid option. Execution cancelled.")

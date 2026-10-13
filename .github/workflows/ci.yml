@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Run CI checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Show event information
+        run: |
+          echo "Workflow triggered successfully!"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch or ref: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
