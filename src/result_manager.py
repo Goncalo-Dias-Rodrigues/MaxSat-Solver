@@ -15,6 +15,7 @@ class ResultManager:
             "execution",
             "num_variables",
             "num_clauses",
+            "number_evaluations",
             "execution_time_seconds",
             "best_result",
             "num_solutions",
@@ -27,18 +28,8 @@ class ResultManager:
                 writer = csv.DictWriter(file, fieldnames=self.fields)
                 writer.writeheader()
 
-    def save_result(
-        self,
-        cnf_file,
-        algorithm,
-        execution,
-        num_variables,
-        num_clauses,
-        execution_time,
-        best_result,
-        num_solutions,
-        best_hypothesis
-    ):
+    def save_result(self, cnf_file, algorithm, execution, num_variables, num_clauses, number_evaluations, execution_time, best_result,
+                    num_solutions, best_hypothesis):
         with open(self.filename, mode="a", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=self.fields)
 
@@ -49,6 +40,7 @@ class ResultManager:
                 "execution": execution,
                 "num_variables": num_variables,
                 "num_clauses": num_clauses,
+                "number_evaluations": number_evaluations,
                 "execution_time_seconds": round(execution_time, 6),
                 "best_result": best_result,
                 "num_solutions": num_solutions,

@@ -95,12 +95,14 @@ if __name__ == '__main__':
 
             max_sat = MaxSat(information, clauses)
 
+            number_of_evaluations = 0
+
             if algorithm_option == 1:
                 strategy = BruteForceStrategy(max_sat)
             else:
                 strategy = NextAscentHillClimbingStrategy(max_sat)
 
-            best_result, best_hypotheses = strategy.solve(max_sat)
+            best_result, best_hypotheses, number_of_evaluations = strategy.solve(max_sat)
 
             end = time.perf_counter()
 
@@ -112,6 +114,7 @@ if __name__ == '__main__':
                 execution=execution,
                 num_variables=information[2],
                 num_clauses=information[3],
+                number_evaluations=number_of_evaluations,
                 execution_time=time_taken,
                 best_result=best_result,
                 num_solutions=len(best_hypotheses),
@@ -121,6 +124,7 @@ if __name__ == '__main__':
             print(f"Algorithm execution time: {time_taken:.6f} seconds")
             print(f"Number of variables: {information[2]}")
             print(f"Number of clauses: {information[3]}")
+            print(f"Number of evaluations: {number_of_evaluations}")
             print(f"Best result: {best_result}")
             print(f"Number of solutions: {len(best_hypotheses)}")
             print(f"Best hypothesis: {best_hypotheses}")

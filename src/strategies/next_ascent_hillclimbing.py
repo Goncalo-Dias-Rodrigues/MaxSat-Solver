@@ -18,6 +18,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
         """
         """
         best_result = -1
+        number_of_evaluations = 0
         best_hypotheses = []
         visited_neighbours = []
         has_better_neighbour = True
@@ -31,6 +32,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
                 self.get_neighbour()
 
             current_result = max_sat.calculate_clauses(best_result)
+            number_of_evaluations += 1
             visited_neighbours.append(tuple(self.variables))
 
             if current_result > best_result:
@@ -41,7 +43,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
             else:
                 self.go_back()
             self.get_neighbour()
-        return best_result, best_hypotheses
+        return best_result, best_hypotheses, number_of_evaluations
 
     def get_neighbour(self):
         #print(self.variables)
