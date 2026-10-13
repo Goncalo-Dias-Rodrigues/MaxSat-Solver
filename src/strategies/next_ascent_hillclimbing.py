@@ -54,7 +54,7 @@ class NextAscentHillClimbingStrategy(MaxSatStrategy):
         self.variables[self.index_to_change] = not self.variables[self.index_to_change]
 
     def get_random_start(self):
-        for index in range(len(self.variables) - 1):
+        for index in range(len(self.variables)):
             random_boolean = random.randint(0, 9)
             if random_boolean < 5:
                 self.variables[index] = True
