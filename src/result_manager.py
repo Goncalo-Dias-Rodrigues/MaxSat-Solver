@@ -48,3 +48,22 @@ class ResultManager:
             })
 
         print(f"Results saved to '{self.filename}'.")
+
+    def get_completed_executions(self):
+        completed = set()
+
+        if not os.path.exists(self.filename):
+            return completed
+
+        with open(self.filename, mode="r", newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            for row_number, row in enumerate(reader, start=2):
+                try:
+                    execution = int(row["execution"])
+                    completed.add((row["cnf_file"], row["algorithm"], execution))
+                except (KeyError, TypeError, ValueError) as error:
+                    raise ValueError(
+                        f"Invalid result entry in '{self.filename}' on row {row_number}."
+                    ) from error
+
+        return completed

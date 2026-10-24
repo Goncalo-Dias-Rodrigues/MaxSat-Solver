@@ -1,10 +1,14 @@
+from itertools import combinations
+
 from src.strategies.maxsat_strategy import MaxSatStrategy
+
 
 class BruteForceStrategy(MaxSatStrategy):
 
     def __init__(self, maxsat):
         self.maxsat = maxsat
         self.variables = maxsat.variables
+        self.local_optima_counts = {}
 
     def solve(self, max_sat):
         """
@@ -13,24 +17,57 @@ class BruteForceStrategy(MaxSatStrategy):
         :param max_sat: MaxSAT problem to solve
         :return: Best result and the hypotheses that achieve that result
         """
+        number_of_variables = max_sat.information[2]
+        max_sat.variables[:] = [False] * number_of_variables
+        self.variables = max_sat.variables
+
         best_result = -1
         number_of_evaluations = 0
         best_hypotheses = []
+        scores = []
+
         for _ in range(1 << max_sat.information[2]):
-            current_result = max_sat.calculate_clauses(best_result)
+            current_result = max_sat.calculate_clauses(-1)
             number_of_evaluations += 1
-            if current_result == max_sat.information[3]:
-                if not best_result == max_sat.information[3]:
-                    best_hypotheses.clear()
+            scores.append(current_result)
+
+            if current_result > best_result:
+                best_hypotheses.clear()
                 best_result = current_result
                 best_hypotheses.append(max_sat.current_hypothesis_to_string())
-            elif current_result >= best_result:
-                if not current_result == best_result:
-                    best_hypotheses.clear()
-                best_result = current_result
+            elif current_result == best_result:
                 best_hypotheses.append(max_sat.current_hypothesis_to_string())
             self.next_hypothesis()
+
+        self.local_optima_counts = self.count_local_optima(scores, number_of_variables)
         return best_result, best_hypotheses, number_of_evaluations
+
+    @staticmethod
+    def count_local_optima(scores, number_of_variables, max_distance=4):
+        """
+        Counts assignments that have no strictly better neighbour at each exact Hamming distance.
+
+        :param scores: Objective value for every assignment in binary-count order
+        :param number_of_variables: Number of Boolean variables in the problem
+        :param max_distance: Largest Hamming distance to examine
+        :return: Mapping from distance k to the number of local optima in its neighbourhood
+        """
+        flip_masks_by_distance = {
+            distance: tuple(
+                sum(1 << index for index in indexes)
+                for indexes in combinations(range(number_of_variables), distance)
+            )
+            for distance in range(1, max_distance + 1)
+        }
+        local_optima_counts = {}
+
+        for distance, flip_masks in flip_masks_by_distance.items():
+            local_optima_counts[distance] = sum(
+                not any(scores[assignment ^ flip_mask] > score for flip_mask in flip_masks)
+                for assignment, score in enumerate(scores)
+            )
+
+        return local_optima_counts
 
     def next_hypothesis(self):
         """
